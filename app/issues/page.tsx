@@ -1,9 +1,13 @@
+"use client"
+
 import React from 'react'
 import {Button} from '@radix-ui/themes'
+import Link from 'next/link'
+import { lexendDeca } from '../ui/fonts'
 
 const page = () => {
   return (
-    <div className='ml-8'><Button>New Issue</Button></div>
+    <div className={`${lexendDeca.className}`}><Button><Link href="/issues/new">New Issue</Link></Button></div>
   )
 }
 

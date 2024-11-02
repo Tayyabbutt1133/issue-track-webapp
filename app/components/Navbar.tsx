@@ -28,18 +28,22 @@ const Navbar = () => {
 
   return (
     <nav className='flex space-x-16 border-b mb-5 px-5 h-20 items-center'>
-      <Link className={`flex items-center ${lexendDeca.className}`} href="/">
+      <Link className={`flex items-center`} href="/">
       <Image src={bug_logo} height={40} width={40} alt='logo'/>
       </Link>
-      <ul className='flex space-x-4'>
+      <ul className={`flex space-x-4 ${lexendDeca.className}`}>
 
         {links.map(link =>
           <Link key={link.Link}
-            className={classNames({
+            className={
+              
+              classNames({
               'text-zinc-900': link.Link === currentpath,
               'text-zinc-500': link.Link !== currentpath,
               'hover:text-zinc-800 transition-colors': true
-            })}
+              })
+            
+            }
             href={link.Link}>{link.label}
           </Link>
         
