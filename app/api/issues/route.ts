@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient, Prisma } from "@prisma/client";
-import { createIssueSchema } from "../../../app/ValidationSchemas";
+import { createIssueSchema } from "../../ValidationSchemas";
 
-const prisma = new PrismaClient();
+// Initialize PrismaClient
+let prisma: PrismaClient;
+
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient();
+} else {
+  if (!(global as any).prisma) {
+    (global as any).prisma = new PrismaClient();
+  }
+  prisma = (global as any).prisma;
+}
 
 export async function POST(request: NextRequest) {
   let body;
@@ -56,7 +66,5 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-  } finally {
-    await prisma.$disconnect();
   }
 }
