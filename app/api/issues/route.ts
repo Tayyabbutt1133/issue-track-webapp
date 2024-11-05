@@ -1,23 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from 'zod';
 import { PrismaClient, Prisma } from "@prisma/client";
+import { createIssueSchema } from "../../../app/ValidationSchemas";
+
 
 // Initialize Prisma Client
 const prisma = new PrismaClient();
-
-const createIssueSchema = z.object({
-  title: z.string().min(1).max(255),
-  description: z.string().min(1),
-  status: z.enum(['OPEN', 'IN_PROGRESS', 'CLOSED']).default('OPEN'),
-});
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validation = createIssueSchema.safeParse(body);
-
     if (!validation.success) {
-      return NextResponse.json(validation.error.errors, { status: 400 });
+      return NextResponse.json(validation.error.format, { status: 400 });
     }
 
     // Use prisma instance for database operation
