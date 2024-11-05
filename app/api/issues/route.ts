@@ -2,19 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { createIssueSchema } from "../../../app/ValidationSchemas";
 
-
-// Initialize Prisma Client
 const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
+  let body;
+  
   try {
-    const body = await request.json();
-    const validation = createIssueSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(validation.error.format, { status: 400 });
-    }
+    body = await request.json();
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Invalid JSON format' },
+      { status: 400 }
+    );
+  }
 
-    // Use prisma instance for database operation
+  const validation = createIssueSchema.safeParse(body);
+  if (!validation.success) {
+    return NextResponse.json(
+      { errors: validation.error.format() },
+      { status: 400 }
+    );
+  }
+
+  try {
     const newIssue = await prisma.issue.create({
       data: {
         title: body.title,
@@ -23,29 +33,30 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(newIssue, { status: 201 });
+    return NextResponse.json(
+      { success: true, data: newIssue },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error creating issue:', error);
 
-    // Handle Prisma errors specifically
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return NextResponse.json(
-        { error: `Prisma error: ${error.message}` },
+        { success: false, error: `Prisma error: ${error.message}` },
         { status: 500 }
       );
     } else if (error instanceof Error) {
       return NextResponse.json(
-        { error: error.message, stack: error.stack },
+        { success: false, error: error.message, stack: error.stack },
         { status: 500 }
       );
     } else {
       return NextResponse.json(
-        { error: 'An unexpected error occurred while creating the issue' },
+        { success: false, error: 'An unexpected error occurred while creating the issue' },
         { status: 500 }
       );
     }
   } finally {
-    // Disconnect Prisma Client after request completes
     await prisma.$disconnect();
   }
 }
